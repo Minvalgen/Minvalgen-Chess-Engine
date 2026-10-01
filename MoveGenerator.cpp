@@ -244,7 +244,6 @@ void MoveGenerator::PrintMoves(){
     printf("Moves of the current position : \n");
     int n = countMoves;
     for(int i = 0 ; i < n ; i++){
-        int score = moves[i].getScore();
         printf("move : %d " , i);
         moves[i].PrtAgeMove();
     }
