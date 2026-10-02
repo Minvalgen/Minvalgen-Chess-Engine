@@ -215,18 +215,6 @@ static void InitEvalMasks() {
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ─────────────────────────────────────────────────────────────────────────────
-static U64 BuildPawnBB(const Board* pos, int color) {
-    U64 bb = 0ULL;
-    int pce = (color == WHITE) ? wP : bP;
-    int n = pos->getPceNum(pce);
-    for (int i = 0; i < n; i++) {
-        int sq64 = ConvertToSmall(pos->getPceSq(pce, i));
-        bb |= (1ULL << sq64);
-    }
-    return bb;
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ─────────────────────────────────────────────────────────────────────────────
@@ -266,8 +254,8 @@ int Evaluation::Evaluate(const Board* pos) {
     int eg[2] = {0, 0};
     int gamePhase = 0;
 
-    U64 wPawns = BuildPawnBB(pos, WHITE);
-    U64 bPawns = BuildPawnBB(pos, BLACK);
+    U64 wPawns = pos->getPawns(WHITE);
+    U64 bPawns = pos->getPawns(BLACK);
 
     // ── Material + PST + Mobility ──────────────────────────────────────────
     for (int pce = wP; pce <= bK; pce++) {

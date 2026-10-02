@@ -31,16 +31,14 @@ std::string prtSq(int sq){
     return s;
 }
 int PopBits(U64 *bb) {
-    U64 b = *bb ^ (*bb - 1);
-    unsigned int fold = (unsigned)((b & 0xffffffff) ^ (b >> 32));
+    if (!*bb) return -1;
+    int index = __builtin_ctzll(*bb);
     *bb &= (*bb - 1);
-    return BitTable[(fold * 0x783a9b23) >> 26];
+    return index;
 }
 
 int CountBits(U64 b) {
-    int r;
-    for (r = 0; b; r++, b &= b - 1);
-    return r;
+    return __builtin_popcountll(b);
 }
 
 void InitBits(){

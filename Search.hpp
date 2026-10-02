@@ -29,6 +29,7 @@ struct SearchResult {
 class SearchEngine {
 private:
     Board*        pos     = nullptr;
+    MakeMove      maker;
     SearchLimits  limits;
     bool          stopped = false;
     long long     nodesCount = 0;
@@ -38,6 +39,10 @@ private:
     Move killers[MAX_PLY][2];
     int  history    [13][BOARD_SQ_NUM];  // history heuristic
     int  counterMove[13][BOARD_SQ_NUM];  // countermove heuristic (piece, toSq)
+
+    // Triangular PV table
+    Move pvTable[MAX_PLY][MAX_PLY];
+    int  pvLength[MAX_PLY];
 
     // Late-move reduction table  [depth][moveIndex]
     int LMRTable[64][64];
@@ -49,7 +54,6 @@ private:
 
     // Move scoring & helpers
     int  ScoreMove(const Move& move, int ttMove, int ply, int prevMove);
-    bool SEEPositive(int fromSq, int toSq) const; // true = capture is at least even
 
     // Core search
     int Quiescence(int alpha, int beta, int ply);

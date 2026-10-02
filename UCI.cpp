@@ -81,9 +81,11 @@ void UCI::ParsePosition(const std::string& line) {
 
     ss >> token;
     if (token == "startpos") {
+        isStartPos = true;
         board.Parse(FEN_STARTUP);
         ss >> token; // Check if "moves" follow
     } else if (token == "fen") {
+        isStartPos = false;
         std::string fenStr = "";
         while (ss >> token && token != "moves") {
             if (!fenStr.empty()) fenStr += " ";
@@ -137,10 +139,15 @@ void UCI::ParseGo(const std::string& line) {
         if (limits.maxTimeMs < 10) limits.maxTimeMs = 10;
     }
 
-    std::string bookMove = GetBookMove(currentMoves);
-    if (!bookMove.empty()) {
-        std::cout << "bestmove " << bookMove << std::endl;
-        return;
+    if (isStartPos) {
+        std::string bookMove = GetBookMove(currentMoves);
+        if (!bookMove.empty()) {
+            Move bm = ParseMoveString(bookMove);
+            if (bm.getMove() != 0) {
+                std::cout << "bestmove " << bookMove << std::endl;
+                return;
+            }
+        }
     }
 
     SearchEngine engine(&board);

@@ -16,6 +16,7 @@ private:
     Move ParseMoveString(const std::string& moveStr);
     std::string GetBookMove(const std::string& moves);
 
+    bool isStartPos = true;
     std::string currentMoves;
 
 public:

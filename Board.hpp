@@ -54,6 +54,7 @@ class Board
         int getFiftyMove() const ; 
         int getHisPly() const;
         int getKingPos(int side) const; 
+        U64 getPawns(int color) const { return pawns[color]; }
         
         void setCastlePerm(int newPerm);        
         void setPieceOnSq(int sq , int pce) ; // set the piece on sq to pce 

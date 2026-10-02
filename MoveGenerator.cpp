@@ -2,8 +2,7 @@
 #include <cassert>
 #include <iostream>
 
-MoveGenerator :: MoveGenerator(Board *_pos){
-    this->pos = _pos;
+MoveGenerator :: MoveGenerator(Board *_pos) : countMoves(0), pos(_pos) {
 }
 
 int MoveGenerator:: getCountMoves(){
@@ -71,21 +70,29 @@ void MoveGenerator::AddPawnMove(int from , int to , int side){
 }
 
 
-void MoveGenerator::GenPawnMoves(int side){ // this function generates the moves of the panws 
+void MoveGenerator::GenPawnMoves(int side, bool capturesOnly){ // this function generates the moves of the panws 
 
     int sq; 
     int pwan = ((side == WHITE )? wP : bP);
     int color = ((side == WHITE) ? BLACK : WHITE);
     int d = ((side == WHITE) ? 1 : -1);
     int rank = ((side == WHITE) ? RANK_2 : RANK_7);
+    int promoRank = ((side == WHITE) ? RANK_7 : RANK_2);
 
     for(int pceNum = 0 ; pceNum < pos->getPceNum(pwan) ; pceNum++){
             sq = pos->getPceSq(pwan , pceNum);
             assert(SqOnBoard(sq));
-            if (pos->getPieceOnSq(sq + d*10) == EMPTY){
-                AddPawnMove(sq , sq + d * 10 , side);
-                if ((RankBrd[sq] == rank) && (pos->getPieceOnSq(sq + d*20) == EMPTY)){
-                    AddQmove(MOVE(sq , sq + d * 20 , EMPTY , EMPTY, PAWNSTART));
+            if (!capturesOnly) {
+                if (pos->getPieceOnSq(sq + d*10) == EMPTY){
+                    AddPawnMove(sq , sq + d * 10 , side);
+                    if ((RankBrd[sq] == rank) && (pos->getPieceOnSq(sq + d*20) == EMPTY)){
+                        AddQmove(MOVE(sq , sq + d * 20 , EMPTY , EMPTY, PAWNSTART));
+                    }
+                }
+            } else {
+                // In capturesOnly, promotions are tactical moves
+                if (RankBrd[sq] == promoRank && pos->getPieceOnSq(sq + d * 10) == EMPTY) {
+                    AddPawnMove(sq, sq + d * 10, side);
                 }
             }
             for(int m = 9 ; m <= 11 ; m+=2){
@@ -104,7 +111,8 @@ void MoveGenerator::GenPawnMoves(int side){ // this function generates the moves
 
 
 
-void MoveGenerator::GenSlideMoves(int side){ // this function generate all sliding moves "bishop , queen , rook"
+
+void MoveGenerator::GenSlideMoves(int side, bool capturesOnly){ // this function generate all sliding moves "bishop , queen , rook"
     int index = LoopSlideInxed[side];
     int pce = LoopSlidePieces[index++];
     int sq;
@@ -128,7 +136,9 @@ void MoveGenerator::GenSlideMoves(int side){ // this function generate all slidi
                         }
                         break;
                     }
-                    AddQmove(MOVE(sq , t_sq , EMPTY , EMPTY , 0));
+                    if (!capturesOnly) {
+                        AddQmove(MOVE(sq , t_sq , EMPTY , EMPTY , 0));
+                    }
                     t_sq += x;
                 }
                 
@@ -141,7 +151,7 @@ void MoveGenerator::GenSlideMoves(int side){ // this function generate all slidi
     }
 }
 
-void MoveGenerator::GenNonSlideMoves(int side){ // this function generate all non-sliding moves "knight , king"
+void MoveGenerator::GenNonSlideMoves(int side, bool capturesOnly){ // this function generate all non-sliding moves "knight , king"
     int index = LoopNonSlideInxed[side];
     int pce = LoopNonSlidePieces[index++];
     int sq;
@@ -166,7 +176,9 @@ void MoveGenerator::GenNonSlideMoves(int side){ // this function generate all no
                     }
                     continue;
                 }
-                AddQmove(MOVE(sq , t_sq , EMPTY , EMPTY , 0));
+                if (!capturesOnly) {
+                    AddQmove(MOVE(sq , t_sq , EMPTY , EMPTY , 0));
+                }
                 
 
             }
@@ -217,26 +229,18 @@ void MoveGenerator::GenCastlMoves(int side){
 void MoveGenerator::GenerateAllMoves(){
     countMoves = 0;
     int side = this->pos->getSide();
-    GenPawnMoves(side);
-    GenSlideMoves(side);
-    GenNonSlideMoves(side);
+    GenPawnMoves(side, false);
+    GenSlideMoves(side, false);
+    GenNonSlideMoves(side, false);
     GenCastlMoves(side);
 }
 
 void MoveGenerator::GenerateCaptures(){
     countMoves = 0;
     int side = this->pos->getSide();
-    GenPawnMoves(side);
-    GenSlideMoves(side);
-    GenNonSlideMoves(side);
-    
-    int writeIndex = 0;
-    for (int i = 0; i < countMoves; i++) {
-        if (moves[i].Captured() != EMPTY || moves[i].Promoted() != EMPTY || moves[i].IsEp()) {
-            moves[writeIndex++] = moves[i];
-        }
-    }
-    countMoves = writeIndex;
+    GenPawnMoves(side, true);
+    GenSlideMoves(side, true);
+    GenNonSlideMoves(side, true);
 }
 
 
