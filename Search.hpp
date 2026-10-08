@@ -14,8 +14,9 @@
 
 struct SearchLimits {
     int maxDepth = 64;
-    long long maxTimeMs = 0;  // 0 = unlimited
-    long long maxNodes  = 0;  // 0 = unlimited
+    long long maxTimeMs = 0;      // hard time limit (absolute max)
+    long long optimalTimeMs = 0;  // soft time target (normal budget)
+    long long maxNodes  = 0;      // 0 = unlimited
 };
 
 struct SearchResult {

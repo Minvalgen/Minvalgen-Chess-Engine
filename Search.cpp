@@ -467,15 +467,15 @@ SearchResult SearchEngine::SearchPosition(const SearchLimits& searchLimits) {
 
     SearchResult result;
     int prevScore = 0;
+    int bestMoveStability = 0;  // how many iterations the best move stayed the same
+    int prevBestMove = 0;       // best move from previous iteration
 
     for (int depth = 1; depth <= limits.maxDepth; depth++) {
         int score = 0;
 
         if (depth <= 4) {
-            // No aspiration window for shallow depths
             score = AlphaBeta(-SCORE_INFINITY, SCORE_INFINITY, depth, 0, true);
         } else {
-            // Aspiration window: start narrow, widen on fail
             int delta = 25;
             int aspirAlpha = prevScore - delta;
             int aspirBeta  = prevScore + delta;
@@ -503,7 +503,7 @@ SearchResult SearchEngine::SearchPosition(const SearchLimits& searchLimits) {
                         aspirBeta = std::min(SCORE_INFINITY, prevScore + delta);
                     }
                 } else {
-                    break; // Exact score within window
+                    break;
                 }
             }
         }

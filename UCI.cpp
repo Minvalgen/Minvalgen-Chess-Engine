@@ -130,13 +130,21 @@ void UCI::ParseGo(const std::string& line) {
 
     if (movetime > 0) {
         limits.maxTimeMs = movetime;
+        limits.optimalTimeMs = movetime;
     } else if (wtime > 0 || btime > 0) {
         long long time = (board.getSide() == WHITE) ? wtime : btime;
         long long inc = (board.getSide() == WHITE) ? winc : binc;
 
-        // Allocate time = remaining / 30 + inc
-        limits.maxTimeMs = (time / 30) + inc;
-        if (limits.maxTimeMs < 10) limits.maxTimeMs = 10;
+        // Optimal time: normal thinking budget
+        long long optimal = time / 20 + (inc * 3) / 4;
+        // Hard limit: absolute maximum (for difficult positions)
+        long long hard = std::min(optimal * 3, time / 3);
+
+        if (optimal < 10) optimal = 10;
+        if (hard < optimal) hard = optimal;
+
+        limits.optimalTimeMs = optimal;
+        limits.maxTimeMs = hard;
     }
 
     if (isStartPos) {
